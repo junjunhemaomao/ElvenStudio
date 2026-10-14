@@ -3,29 +3,99 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gallery 046 — ELVEN STUDIO</title>
-<meta name="description" content="Elven Studio project gallery 046 — 3 images.">
+<title>Project gallery 046 — ELVEN STUDIO</title>
+<meta name="description" content="The old page displayed each image here stretched to 800px wide, which filled the screen with white. The images kept in the mirror are all placeholders — each prints its own filename and size — so the real artwork was never archived. Below they are shown as thumbnails; click one to see it at full size.">
+<meta name="theme-color" content="#000000">
 <link rel="stylesheet" href="../../assets/css/site.css">
 </head>
 <body>
-<div class="gallery">
+  <a class="skip" href="#main">Skip to content</a>
 
-  <h1>Gallery 046</h1>
-  <p class="note">The old page displayed every image here stretched to 800px wide. But the images kept in the mirror are all white placeholders — each one just prints its own filename and size — so the real artwork was never archived. Everything below is shown at its true size, with no stretching.</p>
+  <header class="hdr">
+    <div class="wrap hdr-in">
+      <a class="hdr-brand" href="../index.html">
+        <img src="../../assets/image/01-bj010.png" width="83" height="55" alt="">
+        <span class="hdr-name">ELVEN STUDIO</span>
+      </a>
+      <button class="hdr-toggle" type="button" aria-expanded="false" aria-controls="sitenav">Menu</button>
+      <nav class="hdr-nav" id="sitenav" hidden aria-label="ELVEN STUDIO">
+          <a href="../index.html">Home</a>
+          <a href="../3d.html" aria-current="page">3D Creation</a>
+          <a href="../2d.html">2D Design</a>
+          <a href="../about.html">About Us</a>
+          <a href="../contact.html">Contact Us</a>
+      </nav>
+      <div class="hdr-lang">
+        <a href="#" aria-current="true">EN</a>
+        <a href="../../gb/gallery/046.html">中文</a>
+      </div>
+    </div>
+  </header>
+  <main id="main">
 
-  <!-- 原页面第一张图是 3d-046.png，而那个文件本身就是 63x63 的缩略图，
-       老版把它写死 800x800 拉大铺出来。这里按真实尺寸摆出来并标注缺失。 -->
-  <div class="missing">
-    <img src="../../assets/image/3d-046.png" width="63" height="63" alt="cover thumbnail">
-    <b>Full-size cover art is missing</b>
-    the mirror only kept the 63×63 thumbnail, which the old page stretched to 800×800
+    <div class="page-head wrap">
+      <p class="eyebrow"><a href="../3d.html">← Back to 3D work</a></p>
+      <h1>Project gallery 046</h1>
+    </div>
+
+    <section class="sec wrap">
+      <div class="cover">
+        <button class="cover-btn" type="button" data-full="../../assets/image/3d-046.png"
+                data-group="046" data-caption="3d-046.png · 63 × 63 px">
+          <img src="../../assets/image/3d-046.png" width="63" height="63" alt="3d-046.png">
+        </button>
+        <div class="cover-txt">
+          <p class="eyebrow">Project cover</p>
+          <p class="prose">The old page displayed each image here stretched to 800px wide, which filled the screen with white. The images kept in the mirror are all placeholders — each prints its own filename and size — so the real artwork was never archived. Below they are shown as thumbnails; click one to see it at full size.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec wrap">
+      <div class="sec-head">
+        <h2>Plates (placeholders)</h2>
+        <span class="count">3 pieces</span>
+      </div>
+      <div class="plate-grid">
+        <figure class="plate">
+          <img src="../../assets/image/046-1.png" width="800" height="800" alt="046-1.png">
+          <figcaption>046-1.png · 800 × 800</figcaption>
+        </figure>
+        <figure class="plate">
+          <img src="../../assets/image/046-2.png" width="800" height="800" alt="046-2.png">
+          <figcaption>046-2.png · 800 × 800</figcaption>
+        </figure>
+        <figure class="plate">
+          <img src="../../assets/image/046-3.png" width="800" height="800" alt="046-3.png">
+          <figcaption>046-3.png · 800 × 800</figcaption>
+        </figure>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="ftr">
+    <div class="wrap ftr-in">
+      <img class="ftr-mark" src="../../assets/image/01-bj010.png" width="83" height="55" alt="ELVEN STUDIO">
+      <div>
+        <p>Any copying, manipulation, publishing, or other transfer of the materials on this web site is strictly prohibited.</p>
+        <p><a href="mailto:info@elvenstudio.com">info@elvenstudio.com</a>
+           &nbsp;·&nbsp; +86-28-84558610</p>
+      </div>
+    </div>
+  </footer>
+
+<div class="lightbox" hidden role="dialog" aria-modal="true" aria-label="Artwork preview">
+  <button class="lb-btn lb-close" type="button">Close ✕</button>
+  <figure class="lb-fig">
+    <img class="lb-img" alt="">
+    <figcaption class="lb-cap"></figcaption>
+  </figure>
+  <div class="lb-bar">
+    <button class="lb-btn lb-prev" type="button">← Prev</button>
+    <button class="lb-btn lb-next" type="button">Next →</button>
   </div>
-
-  <figure><img src="../../assets/image/046-1.png" width="800" height="800" alt="046 artwork 1"></figure>
-  <figure><img src="../../assets/image/046-2.png" width="800" height="800" alt="046 artwork 2"></figure>
-  <figure><img src="../../assets/image/046-3.png" width="800" height="800" alt="046 artwork 3"></figure>
-
-  <a class="backlink" href="../3d.html">← Back to 3D Creation</a>
 </div>
+<script src="../../assets/js/site.js"></script>
 </body>
 </html>

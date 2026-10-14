@@ -1,69 +1,165 @@
 /* ==========================================================================
-   ELVEN STUDIO — 版面缩放
+   ELVEN STUDIO — 全站脚本
    --------------------------------------------------------------------------
-   老版面是按 1024x768 排的定宽像素图（最宽的一页 696px，最高的约 1050px）。
-   大屏上留一堆黑边、小窗口里又要横向滚动，所以这里统一处理：
+   无依赖，只做两件事：
 
-     · 视口宽度 < 820px —— 不动，交给 CSS 走文档流（手机/平板排版）
-     · 装不下宽度     —— 缩到刚好放下，不出现横向滚动条
-     · 放得下        —— 按视口高度放大铺满，但夹在 1x ~ 2x 之间（放太大图会糊）
+     1. 手机上的汉堡菜单（宽于 960px 时 CSS 会强制展开，这里不管）
+     2. 作品灯箱：63x63 的缩略图点开能看大一点，能翻页、能键盘操作
 
-   做法是量出 .stage 的原始尺寸，给它 transform: scale()，同时把 .fit-inner 的
-   布局尺寸设成缩放后的尺寸 —— transform 不改变布局盒子，不这么做页面高度和垂直
-   居中都会算错。
+   上一版那 60 行是给"定宽舞台 + transform: scale"用的，整站不再缩放，
+   那段同时作废了。
    ========================================================================== */
 (function () {
   "use strict";
 
-  var MIN_WIDTH = 820;   // 与 site.css 里那个 media query 的断点保持一致
-  var MAX_SCALE = 2;     // 放大的上限，再大 PNG 就明显发虚了
-  var EDGE = 8;          // 缩小时左右各留一点缝，免得贴着滚动条
+  /* ----------------------------------------------------------------------
+     汉堡菜单
+     ---------------------------------------------------------------------- */
+  var toggle = document.querySelector(".hdr-toggle");
+  var nav = document.querySelector(".hdr-nav");
 
-  var root = document.documentElement;
-  var fit = document.querySelector(".fit");
-  var stage = fit && fit.querySelector(".stage");
-  var inner = fit && fit.querySelector(".fit-inner");
+  if (toggle && nav) {
+    var setNav = function (open) {
+      nav.hidden = !open;
+      toggle.setAttribute("aria-expanded", String(open));
+    };
 
-  if (!fit || !stage || !inner) return;
+    // 桌面尺寸下 nav 必须是展开的；窄屏进来时先收起
+    var syncNav = function () {
+      if (window.innerWidth > 960) {
+        nav.hidden = false;
+        toggle.setAttribute("aria-expanded", "false");
+      } else if (toggle.getAttribute("aria-expanded") !== "true") {
+        nav.hidden = true;
+      }
+    };
+    syncNav();
 
-  function fluid() {
-    root.classList.remove("is-scaled");
-    root.style.removeProperty("--s");
-    root.style.removeProperty("--sw");
-    root.style.removeProperty("--sh");
+    toggle.addEventListener("click", function () {
+      setNav(nav.hidden);
+    });
+
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !nav.hidden && window.innerWidth <= 960) {
+        setNav(false);
+        toggle.focus();
+      }
+    });
+
+    // 点菜单外面收起来
+    document.addEventListener("click", function (e) {
+      if (nav.hidden || window.innerWidth > 960) return;
+      if (nav.contains(e.target) || toggle.contains(e.target)) return;
+      setNav(false);
+    });
+
+    var rt = null;
+    window.addEventListener("resize", function () {
+      clearTimeout(rt);
+      rt = setTimeout(syncNav, 150);
+    });
   }
 
-  function apply() {
-    if (window.innerWidth < MIN_WIDTH) { fluid(); return; }
+  /* ----------------------------------------------------------------------
+     灯箱
+     触发元素是 <button class="tile" data-full="大图路径" data-group="组名">。
+     data-full 为空（或没有这个属性）的格子不参与，点了不弹——
+     画册页那些占位图就是这样排除掉的。
+     ---------------------------------------------------------------------- */
+  var box = document.querySelector(".lightbox");
+  if (!box) return;
 
-    // offsetWidth/offsetHeight 不受 transform 影响，缩放状态下量到的仍是原始尺寸
-    var w = stage.offsetWidth;
-    var h = stage.offsetHeight;
-    if (!w || !h) return;
+  var boxImg = box.querySelector(".lb-img");
+  var boxCap = box.querySelector(".lb-cap");
+  var btnPrev = box.querySelector(".lb-prev");
+  var btnNext = box.querySelector(".lb-next");
+  var btnClose = box.querySelector(".lb-close");
 
-    var s;
-    if (w > window.innerWidth - EDGE) {
-      s = (window.innerWidth - EDGE) / w;
-    } else {
-      s = Math.min(MAX_SCALE, Math.max(1, window.innerHeight / h));
+  // items 就是所有 data-full 非空的元素的清单，顺序即文档顺序。
+  // 顺手把下标写回元素上，点击时 O(1) 就能定位。
+  var items = [];
+  var current = -1;
+  var lastFocus = null;
+
+  Array.prototype.forEach.call(
+    document.querySelectorAll("[data-full]"),
+    function (el) {
+      var src = el.getAttribute("data-full");
+      if (!src) return;
+      var img = el.querySelector("img");
+      el.lightboxIndex = items.length;
+      items.push({
+        src: src,
+        cap: el.getAttribute("data-caption") || (img ? img.alt : ""),
+        // 源图和缩略图不是同一个文件，说明是小图放大看的
+        thumb: !!img && img.getAttribute("src") !== src
+      });
     }
+  );
 
-    root.classList.add("is-scaled");
-    root.style.setProperty("--s", s);
-    root.style.setProperty("--sw", (w * s) + "px");
-    root.style.setProperty("--sh", (h * s) + "px");
+  if (!items.length) return;
+
+  function show(i) {
+    if (i < 0 || i >= items.length) return;
+    current = i;
+    var it = items[i];
+    boxImg.src = it.src;
+    boxImg.alt = it.cap || "";
+    boxImg.classList.toggle("is-thumb", !!it.thumb);
+    boxCap.textContent = it.cap || "";
+    var many = items.length > 1;
+    btnPrev.hidden = !many;
+    btnNext.hidden = !many;
   }
 
-  var timer = null;
-  function onResize() {
-    clearTimeout(timer);
-    timer = setTimeout(apply, 120);
+  function open(i, from) {
+    lastFocus = from || document.activeElement;
+    box.hidden = false;
+    document.body.style.overflow = "hidden";
+    show(i);
+    btnClose.focus();
   }
 
-  // 图片有固有尺寸，但字体加载完高度可能微变，所以 load 之后再量一次
-  apply();
-  window.addEventListener("resize", onResize);
-  window.addEventListener("orientationchange", onResize);
-  window.addEventListener("load", apply);
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(apply);
+  function close() {
+    box.hidden = true;
+    document.body.style.overflow = "";
+    boxImg.removeAttribute("src");
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  function step(d) {
+    if (!items.length) return;
+    show((current + d + items.length) % items.length);
+  }
+
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest ? e.target.closest("[data-full]") : null;
+    if (!el || typeof el.lightboxIndex !== "number") return;
+    e.preventDefault();
+    open(el.lightboxIndex, el);
+  });
+
+  btnPrev.addEventListener("click", function () { step(-1); });
+  btnNext.addEventListener("click", function () { step(1); });
+  btnClose.addEventListener("click", function () { close(); });
+
+  // 点底衬关闭，点图片本身不关
+  box.addEventListener("click", function (e) {
+    if (e.target === box) close();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (box.hidden) return;
+    if (e.key === "Escape") { close(); return; }
+    if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); return; }
+    if (e.key === "ArrowRight") { e.preventDefault(); step(1); return; }
+    if (e.key === "Tab") {
+      // 焦点圈在灯箱里：只有三个按钮，转一圈
+      var f = [btnPrev, btnNext, btnClose].filter(function (b) { return !b.hidden; });
+      if (!f.length) return;
+      var first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    }
+  });
 })();
