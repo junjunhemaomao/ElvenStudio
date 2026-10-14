@@ -296,8 +296,13 @@ a > img { display: block; }
   border-bottom: 1px solid var(--grey);
   padding-bottom: 10px;
 }
+.gallery .note { color: var(--muted); font-size: 13px; line-height: 1.6;
+                 margin: 0 0 20px; }
 .gallery figure { margin: 0 0 8px; }
-.gallery figure img { display: block; width: 100%; height: auto; }
+/* 按原始尺寸显示，不放大。原版把每张都写死 800 宽，045-1 实际只有 640 宽，
+   是被拉过的。这里只靠全站那条 max-width:100% 兜住窄屏；块级 + 左右 auto
+   让不够 800 宽的图在列里居中 */
+.gallery figure img { margin: 0 auto; }
 .missing {
   display: flex;
   flex-direction: column;
@@ -314,6 +319,9 @@ a > img { display: block; }
 }
 .missing b { color: var(--muted); font-weight: normal; }
 .backlink { display: inline-block; margin-top: 24px; font-size: 13px; }
+/* legacy-flash 页里提到文件名，用等宽字体区分一下 */
+.gallery code { font-family: Consolas, "Courier New", monospace; font-size: 0.9em;
+                color: var(--yellow); }
 
 /* ==========================================================================
    定宽版面：>= 820px 时恢复 2006 年的像素几何
@@ -413,8 +421,6 @@ a > img { display: block; }
   .ct-info     { width: 240px; flex: none; }
   .ct-baseline { width: 673px; }
 
-  /* --- 画册页在黑底里居中，不再缩放到全屏 --- */
-  .fit-plain .gallery { max-width: 800px; }
 }
 
 /* 平板：定宽版面但视口还不够宽时，别出现横向滚动条 */
