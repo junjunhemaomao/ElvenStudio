@@ -1,3 +1,25 @@
-*.log
+# 只放站本身的内容，本地用的东西不进仓库。
+
+# Windows 本地预览脚本：端口和路径按本机写死，对外人没用
+启动.cmd
+
+# 编辑器 / IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# 操作系统生成
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# 临时文件、日志、备份
+*.log
+*.tmp
+*.bak
+*.swp
+*~
+
+# Python 缓存（本地起 http.server 时可能留下）
+__pycache__/
+*.py[cod]
