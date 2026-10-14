@@ -250,13 +250,25 @@ a > img { display: block; }
 
 /* ==========================================================================
    contact
+   原版：631 宽的内容列。上面 38 空行 + 631x239 大图 + 右对齐的 247x32 标题图，
+   中间一行 282 高（左 62% 底对齐放返回按钮，右 38% 放联系信息），
+   再下面 519x3 的红线 + 111x20 的字标，最后是 83x55 的 logo。
    ========================================================================== */
-.ct-mid  { display: flex; }
-.ct-left { display: flex; }
-.ct-info .line { display: flex; align-items: flex-start; }
-.ct-info .line .ic { flex: none; }
-.ct-info .line .tx { flex: 1 1 auto; min-width: 0; }
-.ct-foot { display: flex; align-items: flex-start; }
+.ct-top  { height: 38px; }
+.ct-title { display: flex; justify-content: flex-end; }
+.ct-mid  { display: flex; flex-direction: column; gap: 16px; }
+.ct-left { display: flex; align-items: flex-end; }
+.ct-info { padding-top: 21px; }
+.ct-info .line {
+  display: flex;
+  align-items: flex-start;
+  min-height: 21px;      /* 原来每条之间隔一个空行，就是这一行的高度 */
+  margin-bottom: 21px;
+}
+.ct-info .line .ic { flex: none; margin-right: 5px; }
+.ct-info .line .tx { flex: 1 1 auto; min-width: 0; margin: 0; }
+.ct-baseline { display: flex; align-items: flex-end; justify-content: space-between; }
+.ct-baseline img:first-child { flex: 1 1 auto; min-width: 0; }
 
 /* ==========================================================================
    画册页（044 / 045 / 046）
@@ -387,15 +399,11 @@ a > img { display: block; }
 
   /* --- contact：外层实测 673 宽，内容列 631 --- */
   .ct          { width: 673px; }
-  .ct-row      { padding-left: 42px; }
-  .ct-mid      { width: 631px; height: 282px; }
-  .ct-left     { width: 391px; flex: none; align-items: flex-end; }
+  .ct-row      { width: 673px; padding-left: 42px; }
+  .ct-mid      { flex-direction: row; gap: 0; height: 282px; }
+  .ct-left     { width: 391px; flex: none; }
   .ct-info     { width: 240px; flex: none; }
-  .ct-info .line { height: 21px; margin-bottom: 21px; }
-  .ct-baseline { width: 631px; display: flex; align-items: flex-start; }
-  .ct-baseline img { display: block; }
-  .ct-baseline .rule { flex: 1 1 auto; align-self: flex-end; }
-  .ct-foot     { padding-left: 42px; }
+  .ct-baseline { width: 673px; }
 
   /* --- 画册页在黑底里居中，不再缩放到全屏 --- */
   .fit-plain .gallery { max-width: 800px; }
