@@ -371,18 +371,25 @@ code { font-family: var(--mono); font-size: 0.9em; color: var(--yellow); }
 .lb-btn[hidden] { display: none; }
 .lb-close { position: absolute; top: 18px; right: 18px; }
 
-/* --- 双语开场页 --- */
+/* --- 双语开场页 ---
+   这一屏就三样东西：红龙徽、字标、两个语言按钮，底下压一行敬告。
+   下内边距给得比上边大，靠它把整块往上顶——纯居中时下沿那片黑看着比上面空。
+   尺寸都带一个 vh 上限，屏幕矮的时候图自己收，免得整屏撑出滚动条。 */
 .splash {
   min-height: 100vh; min-height: 100dvh;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  gap: 26px; padding: 40px var(--gut); text-align: center;
+  gap: clamp(20px, 3.2vh, 34px);
+  padding-top: clamp(24px, 5vh, 64px);
+  padding-bottom: clamp(64px, 11vh, 140px);
+  padding-inline: var(--gut);
+  text-align: center;
 }
-.splash-mark { width: min(72vw, 360px); height: auto; }
-.splash-word { width: min(58vw, 240px); height: auto; }
-.splash .btn-row { justify-content: center; }
-.splash .btn { min-width: 132px; }
-.splash-foot { color: var(--dim); font-size: 12px; max-width: 34em; margin: 0; }
+.splash-mark { width: min(78vw, 430px, 48vh); height: auto; }
+.splash-word { width: min(62vw, 320px, 36vh); height: auto; }
+.splash .btn-row { justify-content: center; gap: 14px; }
+.splash .btn { min-width: 154px; padding: 15px 30px; font-size: 15px; }
+.splash-foot { color: var(--dim); font-size: 13px; max-width: 34em; margin: 0; }
 
 /* ==========================================================================
    5. 断点
