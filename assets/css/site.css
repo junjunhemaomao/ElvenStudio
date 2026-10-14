@@ -78,6 +78,14 @@ a > img { display: block; }
 .is-scaled .fit-inner { width: var(--sw); height: var(--sh); }
 .is-scaled .stage { transform: scale(var(--s)); }
 
+/* 窄屏没有缩放舞台，版面直接躺在文档流里，两侧让出一点边，字别贴着屏幕边。
+   必须夹在 820px 以下：上面那层 padding 会计进 offsetWidth，写进桌面端的话
+   site.js 量到的舞台宽度就多出 28px，缩放比整个算错。 */
+@media (max-width: 819px) {
+  .stage { padding-left: 14px; padding-right: 14px; }
+  .stage.splash { padding-left: 0; padding-right: 0; }
+}
+
 /* --------------------------------------------------------------------------
    正文滚动区（原来是一个 <iframe>）
    -------------------------------------------------------------------------- */
@@ -273,6 +281,9 @@ a > img { display: block; }
 }
 .ct-info .line .ic { flex: none; margin-right: 5px; }
 .ct-info .line .tx { flex: 1 1 auto; min-width: 0; margin: 0; }
+/* 原版英文页这三行外面没有 <p>（中文页有），行高因此紧一档：地址占两行时
+   实测中文 36px、英文 32px。这里照搬，不然英文页下面两块会整体低 4px */
+.ct-info.en .tx { line-height: 1.3333; }
 .ct-baseline { display: flex; align-items: flex-end; justify-content: space-between; }
 .ct-baseline img:first-child { flex: 1 1 auto; min-width: 0; }
 
@@ -416,7 +427,7 @@ a > img { display: block; }
   /* --- contact：外层实测 673 宽，内容列 631 --- */
   .ct          { width: 673px; }
   .ct-row      { width: 673px; padding-left: 42px; }
-  .ct-mid      { flex-direction: row; gap: 0; height: 282px; }
+  .ct-mid      { flex-direction: row; gap: 0; height: 284px; }
   .ct-left     { width: 391px; flex: none; }
   .ct-info     { width: 240px; flex: none; }
   .ct-baseline { width: 673px; }
