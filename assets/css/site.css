@@ -1,4 +1,420 @@
-.unnamed1 {
-	font-family: "Arial", "Helvetica", "sans-serif";
-	font-size: 12px;
+/* ==========================================================================
+   ELVEN STUDIO — 全站样式
+   --------------------------------------------------------------------------
+   原站（2006）是纯 <table> 拼图，所有宽度写死（359 / 654 / 673 / 1024），目标
+   屏幕是 1024x768。这里不改任何一张图，只把这套版面用 flex / grid 重新表达：
+
+     · 默认（手机、平板）走文档流，图片撑满宽度，正文按可读字号排版
+     · 宽度 >= 820px 时恢复原来的定宽版面（.stage），由 site.js 等比缩放铺满屏幕
+
+   固定像素几何都写在下面那个 @media (min-width:820px) 里，基础样式保持流式。
+   几何数字全部来自对原页面的实测（元素 getBoundingClientRect），不是估的。
+   ========================================================================== */
+
+:root {
+  --bg:         #000000;
+  --red:        #8c1e1e;  /* 横幅红、01-bj002 那条带子 */
+  --red-bright: #b10304;  /* 导航按钮字色 */
+  --red-line:   #990000;  /* 2D 页的细红线 */
+  --red-dark:   #721010;  /* about 正文区下面那条 */
+  --grey:       #484848;  /* 分隔线、灰字 */
+  --dim:        #666666;
+  --muted:      #999999;
+  --yellow:     #d4c32f;  /* 小节标题（对齐英文版标题图 01-bj014 的黄） */
+  --text:       #ffffff;
+  --link:       #cc3333;
+
+  --sans: "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+          Arial, Helvetica, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { background: var(--bg); }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 全站每张图都是版面块：给 display:block 是为了消掉行内图片下面那条基线空隙，
+   否则外面那层盒子会比图片本身高出几个像素，整版会一路往上飘 */
+img { display: block; max-width: 100%; height: auto; border: 0; }
+
+a { color: var(--link); text-decoration: none; }
+a:hover, a:focus-visible { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--red-bright); outline-offset: 2px; }
+
+p { margin: 0 0 0.8em; }
+
+a > img { display: block; }
+
+/* --------------------------------------------------------------------------
+   缩放舞台
+   .fit 是铺满视口的画布，.stage 是定宽版面。site.js 量出 .stage 的原始尺寸后
+   给它加 transform: scale()，并把 .fit 的高度设成缩放后的高度（否则缩放不改变
+   布局尺寸，页面高度会算错）。缩放以顶边中点为原点，所以水平方向始终居中。
+   -------------------------------------------------------------------------- */
+.fit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;   /* 缩放后 .stage 的未缩放布局盒子比可视范围大，别让它撑出滚动条 */
+}
+.fit-inner { position: relative; }
+/* 原点必须是左上角：.fit-inner 的宽度正好等于缩放后的宽度，舞台从它的左上角
+   开始铺，才和 .fit 的居中算得上。用 top center 的话整版会往左偏一半 */
+.stage { transform-origin: top left; }
+
+/* site.js 量出原始尺寸后写入 --s / --sw / --sh */
+.is-scaled .fit-inner { width: var(--sw); height: var(--sh); }
+.is-scaled .stage { transform: scale(var(--s)); }
+
+/* --------------------------------------------------------------------------
+   正文滚动区（原来是一个 <iframe>）
+   -------------------------------------------------------------------------- */
+.pane {
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--red) var(--grey);   /* 取代旧的 IE SCROLLBAR-* 属性 */
+}
+.pane::-webkit-scrollbar { width: 10px; height: 10px; }
+.pane::-webkit-scrollbar-track { background: var(--grey); }
+.pane::-webkit-scrollbar-thumb { background: var(--red); }
+
+/* --------------------------------------------------------------------------
+   共享零件
+   -------------------------------------------------------------------------- */
+.copyright {
+  font-size: 12px;
+  color: var(--dim);
+  line-height: 1.4;
+  margin: 0;
+}
+.copyright .bullet { display: inline-block; vertical-align: -1px; }
+
+/* 正文里的小节标题：原来是一张 95x17 的空白占位图（01-bj022~025），
+   渲染出来是四条白杠。这里改成站内配色的文字。 */
+.sec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  color: var(--yellow);
+  line-height: 1;
+}
+
+/* 项目小标题图（英文版用的是图中的真实标题图，中文版没有） */
+.sec-img { display: block; margin: 0 0 10px; }
+
+/* 分隔线 */
+.rule { background: var(--grey); }
+.rule-red { background: var(--red-line); }
+/* 01-bj013 是一条 3x1 的红色渐变，横向平铺当细线用 */
+.rule-grad {
+  height: 1px;
+  background: url(../image/01-bj013.png) repeat-x 0 50%;
+}
+
+/* --------------------------------------------------------------------------
+   缩略图网格
+   单元格 90x90，玻璃角标是背景图 02-bj006.png，缩略图 63x63 摆在 (11,20) ——
+   和原表格里的内边距完全一致。
+   -------------------------------------------------------------------------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 90px);
+  justify-content: start;
+}
+.cell {
+  width: 90px;
+  height: 90px;
+  background: url(../image/02-bj006.png) no-repeat;
+}
+.cell img {
+  display: block;
+  width: 63px;
+  height: 63px;
+  margin: 20px 0 0 11px;
+}
+
+/* ==========================================================================
+   开场页（359 宽）：logo、字标、语言按钮、版权
+   实测：顶空 20 / logo 359x389 / 字标行 42（图在 x=46）
+        / 语言行 21（图标 x=46，按钮 x=198、x=264）/ 空 70 / 版权 / 底空 162
+   ========================================================================== */
+.splash { width: 100%; max-width: 359px; padding-top: 20px; }
+.splash-logo  { display: block; }
+.splash-word  { height: 42px; padding-left: 46px; }
+.splash-langs { display: flex; align-items: center; height: 21px; padding-left: 46px; }
+.splash-langs .icon { width: 152px; flex: none; }
+.splash-langs a { flex: none; }
+.splash-langs a + a { margin-left: 4px; }
+.splash-copy  { margin: 70px 0 0; padding: 0 6px; text-align: center; }
+.splash-tail  { height: 162px; }
+
+/* ==========================================================================
+   about：定宽框 + 左侧导航 + 右侧正文区
+   （外层表格实测 696x904；正文行 610，导航列 230，正文区 297x370）
+   ========================================================================== */
+.ab-band  { display: flex; }
+.ab-head  { display: flex; justify-content: space-between; }
+.ab-title { display: flex; align-items: flex-start; }
+.ab-title .gap { width: 120px; flex: none; }
+.ab-body  { display: flex; align-items: flex-start; }
+
+/* 导航列：按钮和分隔符各自右对齐到不同位置，跟原来的嵌套表格一致 */
+.ab-nav   { display: flex; flex-direction: column; }
+.ab-nav a.b,
+.ab-nav .sep { align-self: flex-end; display: flex; align-items: center; }
+.ab-nav a.b   { height: 21px; }
+.ab-nav .sep { height: 13px; }
+
+.ab-vline { width: 1px; flex: none; align-self: stretch; background: var(--grey); }
+.ab-pane  { flex: 1 1 auto; min-width: 0; }
+
+/* 正文（原来是 297x370 的 iframe，内容表格 273 宽，文字列 235 宽） */
+.ab-copy  { width: 100%; }
+.ab-copy h2.sec,
+.ab-copy p { margin: 0 0 12px; }
+.ab-copy hr.rule { border: 0; height: 1px; margin: 14px 0; }
+.ab-copy .sec img { flex: none; }
+.ab-shots p { text-align: center; margin: 0 0 10px; }
+.ab-shots p.cap { text-align: left; }
+
+.ab-hline { height: 1px; background: var(--red-dark); }
+.ab-foot  { display: flex; align-items: flex-start; justify-content: space-between; }
+.ab-contact { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+.ab-contact a { font-size: 12px; color: var(--muted); }
+.ab-tail  { height: 50px; }
+
+/* ==========================================================================
+   3D / 2D 缩略图页
+   ========================================================================== */
+.td-head   { display: flex; align-items: flex-start; justify-content: space-between; }
+.td-bottom { display: flex; align-items: flex-end; }
+.td-paper  { display: flex; align-items: flex-start; }
+/* 顶上的 1px 线：原版里那条图是靠右的。用 flex 而不是 text-align，
+   否则行内图片的基线会让 div 撑高 */
+.td-topline, .dd-topline { display: flex; justify-content: flex-end; height: 1px; }
+.td-topline img, .dd-topline img { display: block; }
+.td-topline { background: #fff; }              /* 3D 页顶那条白线 */
+.dd-topline { background: var(--red-line); }   /* 2D 页顶那条红线 */
+.dd-frame, .td-frame { box-sizing: border-box; }
+.dd-foot   { display: flex; align-items: flex-start; }
+
+/* 导航行：前面一组按钮靠右排，后面跟固定宽度的小图标。
+   原版里按钮顶对齐，15x13 的分隔符比按钮低 4px、13x11 的小图标低 3px */
+.navrow       { display: flex; align-items: flex-start; }
+.navrow > *   { flex: none; }
+.navrow .push { flex: 1 1 auto; display: flex; align-items: flex-start; justify-content: flex-end; }
+.navrow .sep, .dd-nav .sep { margin-top: 4px; }
+.navrow .ic,  .dd-nav .ic  { margin-top: 3px; }
+
+/* 2D 页：左边 212x45 的标题图，下面挂玻璃卡片，再下面一行导航 */
+.dd-head     { display: flex; align-items: flex-start; }
+.dd-nav      { display: flex; align-items: flex-start; }
+.dd-nav > *  { flex: none; }
+
+/* 玻璃卡片：69x92 底图 + 101x10 横条 + 11x92 右边条，左右各一条 1px 红线，
+   底部两个 11x9 角标。卡片整体 187x134，内部位置取自原表格的单元格宽度。 */
+.dd-card { position: relative; width: 187px; height: 134px; flex: none;
+           border-left: 1px solid var(--red-line);
+           border-right: 1px solid var(--red-line); }
+.dd-card img { position: absolute; display: block; }
+.dd-card .c1 { left: 0;     top: 0; }
+.dd-card .c2 { left: 69px;  top: 0; }
+.dd-card .c3 { left: 174px; top: 0; }
+.dd-card .b1 { left: 0;     bottom: 0; }
+.dd-card .b2 { left: 174px; bottom: 0; }
+
+/* 2D 页底部：一条横贯的 1px 红线，左端挂一个 29px 的白色缺口（02-bj010-2），
+   再下面 29x29 的角块和 1x29 的竖线 */
+.dd-bar    { position: relative; margin-left: 42px; height: 1px; background: var(--red-line); }
+.dd-bar .cap { position: absolute; right: 100%; top: 0; display: block; height: 1px; }
+.dd-corner { display: flex; align-items: flex-start; margin-left: 13px; }
+.dd-corner img { display: block; }
+
+/* ==========================================================================
+   contact
+   ========================================================================== */
+.ct-mid  { display: flex; }
+.ct-left { display: flex; }
+.ct-info .line { display: flex; align-items: flex-start; }
+.ct-info .line .ic { flex: none; }
+.ct-info .line .tx { flex: 1 1 auto; min-width: 0; }
+.ct-foot { display: flex; align-items: flex-start; }
+
+/* ==========================================================================
+   画册页（044 / 045 / 046）
+   原版是白底裸图，还把 800x800 的占位图直接铺出来。这里改成黑底居中，
+   真图按原始尺寸显示，缺图的槽位明确标出来。
+   ========================================================================== */
+.gallery {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+.gallery h1 {
+  font-size: 15px;
+  font-weight: normal;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 20px;
+  border-bottom: 1px solid var(--grey);
+  padding-bottom: 10px;
+}
+.gallery figure { margin: 0 0 8px; }
+.gallery figure img { display: block; width: 100%; height: auto; }
+.missing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: #0b0b0b;
+  border: 1px dashed #3a3a3a;
+  color: var(--dim);
+  font-size: 12px;
+  text-align: center;
+  padding: 12px;
+  margin: 0 0 8px;
+}
+.missing b { color: var(--muted); font-weight: normal; }
+.backlink { display: inline-block; margin-top: 24px; font-size: 13px; }
+
+/* ==========================================================================
+   定宽版面：>= 820px 时恢复 2006 年的像素几何
+   所有数字都是实测值。舞台宽度 = 各页外层表格的实际宽度。
+   ========================================================================== */
+@media (min-width: 820px) {
+
+  body { font-size: 12px; line-height: 1.5; }
+
+  /* --- 开场页：宽 359，高 721。间距都是版面本身的一部分，写在上面的基础样式里，
+         这里只需要固定宽度上限（大屏要靠它算出缩放比） --- */
+  .splash { max-width: 359px; }
+
+  /* --- about：外层表格实测 696x904 --- */
+  .ab      { width: 696px; padding-top: 21px; }
+  .ab-row  { padding-left: 42px; }
+  .ab-band { width: 654px; }
+
+  .ab-head  { width: 612px; }
+  .ab-title { width: 612px; }
+
+  /* 正文行：左图 58 + 导航 230 + 竖线 + 6 + 正文 297 + 10 + 竖线 */
+  .ab-body { width: 603px; align-items: stretch; }
+  .ab-nav  { width: 230px; flex: none; }
+  .ab-nav a.b   { margin-right: 104px; }
+  .ab-nav .sep  { margin-right: 145px; }
+  .ab-pane { flex: none; width: 297px; margin: 0 10px 0 6px; }
+  .ab-pane .pane { height: 370px; margin-top: 21px; }
+
+  .ab-copy { max-width: 273px; }
+  .ab-copy h2.sec,
+  .ab-copy p { margin-left: 38px; }
+
+  .ab-hline { width: 612px; margin-left: 42px; }
+  .ab-foot  { width: 612px; }
+  .ab-contact { width: 529px; }
+
+  /* --- 3D：外层实测 660 宽。顶部一条 1px 白线，主体左右各一条 1px 白线 ---
+     位置（相对舞台左边）：白线 x=42..655，滚动区 x=68 y=126 565x443，
+     缩略图行 84..574，导航行 574..595，02-bj004 595..761，版权行 761..816 */
+  .td          { width: 660px; }
+  .td-topline  { margin-left: 42px; width: 613px; }
+  .td-row      { padding-left: 42px; }
+  .td-head     { width: 613px; }
+  .td-frame    { margin-left: 42px; width: 613px;
+                 border-left: 1px solid #fff; border-right: 1px solid #fff; }
+  .td-pane-row { display: flex; height: 490px; }
+  .td-pane-row .gap-l { width: 25px; flex: none; }
+  .td-pane-row .pane  { width: 565px; height: 443px; margin-top: 42px; flex: none; }
+  .td-pane-row .gap-r { width: 21px; flex: none; }
+  .td-navrow   { display: flex; height: 21px; }
+  .td-navrow .gap-l { width: 25px; flex: none; }
+  .td-navrow .inner { width: 565px; flex: none; display: flex; align-items: flex-start; }
+  .td-bottom   { width: 660px; }
+  .td-bottom-l { width: 42px; flex: none; }
+  .td-paper    { width: 660px; padding-left: 42px; }
+  .td-paper .gap { width: 12px; flex: none; }
+  .td-paper.en .gap { width: 6px; }
+  .td-paper .copy { flex: 1 1 auto; min-width: 0; }
+
+  .navrow { width: 100%; }
+
+  /* --- 2D：外层实测 654 宽。红线在 x=42 和 x=653，横线在 y=38 和 y=795 ---
+     标题行 39..314（左列 363 + 02-bj008 247），滚动区 314..757，
+     空行 757..795，角块 795..825，版权行 825..880 */
+  .dd          { width: 654px; }
+  .dd-topline  { margin-left: 42px; width: 612px; }
+  .dd-frame    { margin-left: 42px; width: 612px;
+                 border-left: 1px solid var(--red-line);
+                 border-right: 1px solid var(--red-line); }
+  .dd-head     { height: 275px; }
+  /* 左列竖着排：标题图、卡片、导航行。卡片那格吃掉剩下的高度，
+     所以英文版标题图矮 3px 时卡片就跟着上移 3px —— 和原版一致 */
+  .dd-head .col-l { width: 363px; flex: none; display: flex; flex-direction: column;
+                    align-self: stretch; }   /* 撑满 275，导航行才会落在 y=291 */
+  .dd-head .art   { width: 247px; flex: none; }
+  .dd-card-box { flex: 1 1 auto; padding-left: 25px; }
+  .dd-nav      { height: 23px; }
+  .dd-nav .lead { width: 26px; flex: none; }
+  .dd-pane-row { display: flex; height: 443px; }
+  .dd-pane-row .gap-l { width: 25px; flex: none; }
+  .dd-pane-row .pane  { width: 565px; height: 443px; flex: none; }
+  .dd-pane-row .gap-r { width: 20px; flex: none; }
+  .dd-gap      { height: 38px; }
+  .dd-bar      { width: 612px; }
+  .dd-foot     { padding-left: 42px; }
+  .dd-foot .gap { width: 7px; flex: none; }
+  .dd-foot.en .gap { width: 5px; }
+
+  /* --- contact：外层实测 673 宽，内容列 631 --- */
+  .ct          { width: 673px; }
+  .ct-row      { padding-left: 42px; }
+  .ct-mid      { width: 631px; height: 282px; }
+  .ct-left     { width: 391px; flex: none; align-items: flex-end; }
+  .ct-info     { width: 240px; flex: none; }
+  .ct-info .line { height: 21px; margin-bottom: 21px; }
+  .ct-baseline { width: 631px; display: flex; align-items: flex-start; }
+  .ct-baseline img { display: block; }
+  .ct-baseline .rule { flex: 1 1 auto; align-self: flex-end; }
+  .ct-foot     { padding-left: 42px; }
+
+  /* --- 画册页在黑底里居中，不再缩放到全屏 --- */
+  .fit-plain .gallery { max-width: 800px; }
+}
+
+/* 平板：定宽版面但视口还不够宽时，别出现横向滚动条 */
+@media (min-width: 820px) and (max-width: 900px) {
+  .is-scaled .stage { max-width: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* 打印：去掉黑底和缩放，正文按纸面排版 */
+@media print {
+  html, body { background: #fff; color: #000; }
+  .fit { min-height: 0; display: block; }
+  .stage { transform: none !important; width: auto !important; }
+  .pane { overflow: visible; height: auto !important; }
+  .gallery, .gallery h1 { max-width: none; }
 }
