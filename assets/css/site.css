@@ -195,9 +195,15 @@ a > img { display: block; }
 .ab-shots p { text-align: center; margin: 0 0 10px; }
 .ab-shots p.cap { text-align: left; }
 
+/* 客户 logo 在原版里是一行一张、上下贴着的 */
+.ab-logos p { margin-bottom: 0; }
+
 .ab-hline { height: 1px; background: var(--red-dark); }
 .ab-foot  { display: flex; align-items: flex-start; justify-content: space-between; }
-.ab-contact { display: flex; align-items: center; justify-content: flex-end; gap: 14px; }
+/* 页脚：小红点右对齐在 75% 那格里，邮箱右对齐在 25% 那格里（原版两个 div align=right） */
+.ab-contact { display: flex; align-items: flex-start; width: 529px; }
+.ab-contact .c1 { width: 75%; display: flex; justify-content: flex-end; }
+.ab-contact .c2 { width: 25%; display: flex; justify-content: flex-end; }
 .ab-contact a { font-size: 12px; color: var(--muted); }
 .ab-tail  { height: 50px; }
 
@@ -342,7 +348,9 @@ a > img { display: block; }
   .ab-copy p { margin-left: 38px; }
 
   .ab-hline { width: 612px; margin-left: 42px; }
-  .ab-foot  { width: 612px; }
+  /* 653/654 而不是 612：这一行也吃 .ab-row 的 padding-left:42，
+     写 612 的话内容盒只剩 570，logo 和小红点会被挤扁 32px */
+  .ab-foot  { width: 654px; }
   .ab-contact { width: 529px; }
 
   /* --- 3D：外层实测 660 宽。顶部一条 1px 白线，主体左右各一条 1px 白线 ---
