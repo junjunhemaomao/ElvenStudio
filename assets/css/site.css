@@ -348,7 +348,9 @@ figure.shot { margin: 0; }
 /* --- 老同事聚会 ---
    不是缩略图墙，是一串按年份往下排的完整照片：年份一行，照片整幅。
    以后加年份，复制一个 .reunion 块就行，样式不用动。 */
-.reunion-list { display: grid; gap: clamp(40px, 7vw, 84px); }
+/* 照片不铺满整幅版面：1100px 时块头太大，2024 那张本身偏软，放得越大越明显。
+   收到 900px，三张的观感也更匀。 */
+.reunion-list { display: grid; gap: clamp(40px, 7vw, 84px); max-width: 900px; }
 .reunion-year {
   display: flex; align-items: center; gap: 16px;
   margin: 0 0 16px;
