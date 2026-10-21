@@ -345,6 +345,22 @@ figure.shot { margin: 0; }
    拉成通栏、按 cover 裁，才像故意的。 */
 .band { width: 100%; height: clamp(140px, 17vw, 240px); object-fit: cover; }
 
+/* --- 老同事聚会 ---
+   不是缩略图墙，是一串按年份往下排的完整照片：年份一行，照片整幅。
+   以后加年份，复制一个 .reunion 块就行，样式不用动。 */
+.reunion-list { display: grid; gap: clamp(40px, 7vw, 84px); }
+.reunion-year {
+  display: flex; align-items: center; gap: 16px;
+  margin: 0 0 16px;
+  font-family: var(--mono); font-size: clamp(24px, 3.2vw, 36px);
+  font-weight: 600; line-height: 1; letter-spacing: 0.02em;
+  color: var(--red-bright);
+}
+/* 年份右边拉一条细线，把这一组和下一组隔开 */
+.reunion-year::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.reunion-fig { margin: 0; }
+.reunion-fig img { width: 100%; height: auto; border: 1px solid var(--line); background: var(--panel); }
+
 /* 存档页里提到文件名 */
 code { font-family: var(--mono); font-size: 0.9em; color: var(--yellow); }
 
